@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Projeto - NossaVoz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900">
+
+    <!-- Navegação Simplificada -->
+    <nav class="bg-black text-white py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="text-xl font-black uppercase italic tracking-tighter">
+                Terceiro Setor - <span class="text-yellow-500">MOC</span>
+            </a>
+            <a href="index.html" class="text-xs font-black uppercase border-b-2 border-yellow-500 hover:text-yellow-500 transition">
+                ← Voltar para o início
+            </a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-6 py-12">
+        <!-- Estado de Carregamento -->
+        <div id="loading-state" class="flex flex-col items-center justify-center py-20">
+            <div class="w-12 h-12 border-4 border-zinc-300 border-t-black rounded-full animate-spin"></div>
+            <p class="mt-4 font-black uppercase text-zinc-400 tracking-widest">Carregando história...</p>
+        </div>
+
+        <!-- Conteúdo do Projeto (Inicia escondido) -->
+        <article id="projeto-content" class="hidden">
+            <header class="mb-8">
+                <span id="p-categoria" class="bg-yellow-500 text-black px-3 py-1 font-black uppercase text-xs border-2 border-black"></span>
+                <h1 id="p-titulo" class="text-4xl md:text-6xl font-black uppercase italic mt-4 leading-none tracking-tight"></h1>
+            </header>
+
+            <!-- Moldura Neobrutalista para a Imagem -->
+            <div class="relative mb-10">
+                <div class="absolute inset-0 bg-black translate-x-3 translate-y-3"></div>
+                <img id="p-imagem" src="" alt="" class="relative w-full h-[300px] md:h-[500px] object-cover border-4 border-black">
+            </div>
+
+            <!-- Descrição com suporte a quebra de linha -->
+            <div id="p-descricao" class="text-lg md:text-xl leading-relaxed text-zinc-800 whitespace-pre-line space-y-6">
+                <!-- O texto da planilha entrará aqui -->
+            </div>
+
+            <!-- Seção de Ação Social -->
+            <section class="mt-16 p-8 bg-black text-white border-l-[12px] border-yellow-500 shadow-[15px_15px_0px_0px_rgba(0,0,0,0.1)]">
+                <!-- <h3 class="text-2xl font-black uppercase italic mb-2">Como apoiar esta causa?</h3>
+                <p class="text-zinc-400 mb-6">Cada gesto conta. Você pode apoiar este projeto através de doações, voluntariado ou apenas compartilhando esta história.</p>
+                <div class="flex flex-wrap gap-4">
+                    <button class="bg-yellow-500 text-black px-6 py-3 font-black uppercase text-sm hover:bg-white transition-colors">Doar agora</button> -->
+                    <button id="btn-share" class="border-2 border-white text-white px-6 py-3 font-black uppercase text-sm hover:bg-white hover:text-black transition-colors">Compartilhar</button>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <script>
+        const URL_API = "https://script.google.com/macros/s/AKfycbw8IIi8rWShTNPbipTDCt5JjaN5WvQ8AYpPq10HwPfUiEEpsoNSHsVVv5BjZlesNJA/exec";
+
+        async function carregarProjeto() {
+            // 1. Capturar o nome do projeto pela URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const nomeBuscado = urlParams.get('projeto');
+
+            if (!nomeBuscado) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                // 2. Buscar os dados da mesma API
+                const response = await fetch(URL_API);
+                const projetos = await response.json();
+
+                // 3. Localizar o projeto específico
+                const projeto = projetos.find(p => p.titulo === decodeURIComponent(nomeBuscado));
+
+                if (projeto) {
+                    // 4. Preencher os campos
+                    document.title = `${projeto.titulo} | Terceiro Setor`;
+                    document.getElementById('p-titulo').innerText = projeto.titulo;
+                    document.getElementById('p-categoria').innerText = projeto.categoria;
+                    document.getElementById('p-imagem').src = projeto.imagem;
+                    document.getElementById('p-descricao').innerText = projeto.descricao;
+
+                    // 5. Trocar visualização
+                    document.getElementById('loading-state').classList.add('hidden');
+                    document.getElementById('projeto-content').classList.remove('hidden');
+
+                    // Configurar botão de compartilhar
+                    document.getElementById('btn-share').onclick = () => {
+                        if (navigator.share) {
+                            navigator.share({
+                                title: projeto.titulo,
+                                text: `Conheça o projeto ${projeto.titulo} no Portal do Terceiro Setor`,
+                                url: window.location.href
+                            });
+                        } else {
+                            alert("Link copiado para a área de transferência!");
+                            navigator.clipboard.writeText(window.location.href);
+                        }
+                    };
+
+                } else {
+                    document.getElementById('loading-state').innerHTML = "<p class='font-black uppercase'>Postagens não encontrada.</p>";
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+                document.getElementById('loading-state').innerHTML = "<p class='font-black uppercase text-red-500'>Erro ao conectar com a base de dados.</p>";
+            }
+        }
+
+        carregarProjeto();
+    </script>
+</body>
+</html>
