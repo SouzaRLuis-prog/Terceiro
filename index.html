@@ -37,7 +37,7 @@
         <button
           class="bg-yellow-500 text-black px-6 py-2 font-black uppercase text-sm hover:bg-yellow-400 transition"
         >
-          Doe Agora
+          Botão 1
         </button>
       </div>
     </nav>
@@ -255,6 +255,15 @@
     // FUNÇÃO QUE ESTAVA FALTANDO: Gera os cards da página inicial
     function criarCardHTML(projeto) {
       const link = `post.html?projeto=${encodeURIComponent(projeto.titulo)}`;
+
+      let dataFormatada = "Sem data";
+      if (projeto.data) {
+        const d = new Date(projeto.data);
+        // Formata para o padrão brasileiro (dia/mês/ano)
+        dataFormatada = d.toLocaleDateString('pt-BR');
+      }
+
+      
       return `
         <div class="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex flex-col">
             <div class="h-56 overflow-hidden border-b-4 border-black">
