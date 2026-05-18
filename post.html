@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes do Projeto - NossaVoz</title>
+    <title>Portal Terceiro Setor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -62,63 +62,6 @@
         </article>
     </main>
 
-    <script>
-        const URL_API = "https://script.google.com/macros/s/AKfycbw8IIi8rWShTNPbipTDCt5JjaN5WvQ8AYpPq10HwPfUiEEpsoNSHsVVv5BjZlesNJA/exec";
-
-        async function carregarProjeto() {
-            // 1. Capturar o nome do projeto pela URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const nomeBuscado = urlParams.get('projeto');
-
-            if (!nomeBuscado) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            try {
-                // 2. Buscar os dados da mesma API
-                const response = await fetch(URL_API);
-                const projetos = await response.json();
-
-                // 3. Localizar o projeto específico
-                const projeto = projetos.find(p => p.titulo === decodeURIComponent(nomeBuscado));
-
-                if (projeto) {
-                    // 4. Preencher os campos
-                    document.title = `${projeto.titulo} | Terceiro Setor`;
-                    document.getElementById('p-titulo').innerText = projeto.titulo;
-                    document.getElementById('p-categoria').innerText = projeto.categoria;
-                    document.getElementById('p-imagem').src = projeto.imagem;
-                    document.getElementById('p-descricao').innerText = projeto.descricao;
-
-                    // 5. Trocar visualização
-                    document.getElementById('loading-state').classList.add('hidden');
-                    document.getElementById('projeto-content').classList.remove('hidden');
-
-                    // Configurar botão de compartilhar
-                    document.getElementById('btn-share').onclick = () => {
-                        if (navigator.share) {
-                            navigator.share({
-                                title: projeto.titulo,
-                                text: `Conheça o projeto ${projeto.titulo} no Portal do Terceiro Setor`,
-                                url: window.location.href
-                            });
-                        } else {
-                            alert("Link copiado para a área de transferência!");
-                            navigator.clipboard.writeText(window.location.href);
-                        }
-                    };
-
-                } else {
-                    document.getElementById('loading-state').innerHTML = "<p class='font-black uppercase'>Postagens não encontrada.</p>";
-                }
-            } catch (error) {
-                console.error("Erro:", error);
-                document.getElementById('loading-state').innerHTML = "<p class='font-black uppercase text-red-500'>Erro ao conectar com a base de dados.</p>";
-            }
-        }
-
-        carregarProjeto();
-    </script>
+   <script src="script.js"></script>
 </body>
 </html>
