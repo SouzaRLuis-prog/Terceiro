@@ -41,6 +41,12 @@ async function iniciar() {
     if (document.getElementById("p-titulo")) {
       renderizarDetalhes();
     }
+
+    // Ativa o observador imediatamente após carregar e renderizar os dados da planilha
+    if (typeof configurarObservador === "function") {
+      configurarObservador();
+    }
+
   } catch (error) {
     console.error("Erro ao carregar dados do portal:", error);
   }
@@ -58,7 +64,6 @@ function renderizarParceiros() {
   }
 
   todosOsParceiros.forEach((parceiro) => {
-    // Garante que o código não quebre mesmo se os dados vierem vazios ou desalinhados
     const nomeParceiro = parceiro.nome || "Parceiro Institucional";
     const imagemParceiro = parceiro.imagem || "";
 
@@ -70,6 +75,7 @@ function renderizarParceiros() {
     `;
   });
 }
+
 function renderizarAgenda() {
   const gridAgenda = document.getElementById("grid-agenda");
   if (!gridAgenda) return;
@@ -201,7 +207,6 @@ function fecharModal() {
   }
 }
 
-// --- FUNÇÕES DO MODAL DE DOAÇÃO (CORRIGIDAS) ---
 function abrirModalDoacao() {
   const modal = document.getElementById("modal-doacao");
   if (modal) {
@@ -225,7 +230,6 @@ function copiarPix() {
   const sampleChave = elementoChave.innerText;
   
   navigator.clipboard.writeText(sampleChave).then(() => {
-    // Seletor corrigido para encontrar o span do botão de copiar independentemente de formatações externas
     const alvo = document.querySelector("button[onclick='copiarPix()'] span:last-child");
     if (!alvo) return;
 
@@ -244,49 +248,48 @@ function copiarPix() {
     console.error("Erro ao copiar o Pix: ", err);
   });
 }
-// --- EFEITO DE SURGIMENTO AVANÇADO (SCROLL REVEAL COM CASCATA) ---
-document.addEventListener("DOMContentLoaded", () => {
-  
-  const configurarObservador = () => {
-    const elementosParaRevelar = document.querySelectorAll(".revelar");
 
-    const observador = new IntersectionObserver((entradas) => {
-      entradas.forEach((entrada) => {
-        if (entrada.isIntersecting) {
-          entrada.target.classList.add("ativo");
-          
-          if (entrada.target.id === "grid-projetos" || entrada.target.id === "grid-agenda" || entrada.target.id === "grid-parceiros") {
-            const filhos = entrada.target.children;
-            Array.from(filhos).forEach((filho, index) => {
-              filho.style.transition = `opacity 0.6s ease-out ${index * 0.15}s, transform 0.6s ease-out ${index * 0.15}s`;
-              filho.style.opacity = "1";
-              filho.style.transform = "translateY(0)";
-            });
-          }
-          
-          observador.unobserve(entrada.target);
-        }
-      });
-    }, {
-      threshold: 0.1,
-      rootMargin: "0px 0px -30px 0px"
-    });
+// --- EFEITO DE SURGIMENTO AVANÇADO (SCROLL REVEAL COM CASCATA CORRIGIDO) ---
+function configurarObservador() {
+  const elementosParaRevelar = document.querySelectorAll(".revelar");
 
-    elementosParaRevelar.forEach((elemento) => {
-      if (elemento.id === "grid-projetos" || elemento.id === "grid-agenda" || elemento.id === "grid-parceiros") {
-        setTimeout(() => {
-          Array.from(elemento.children).forEach(filho => {
-            filho.style.opacity = "0";
-            filho.style.transform = "translateY(15px)";
+  const observador = new IntersectionObserver((entradas) => {
+    entradas.forEach((entrada) => {
+      if (entrada.isIntersecting) {
+        entrada.target.classList.add("ativo");
+
+        if (entrada.target.id === "grid-projetos" || entrada.target.id === "grid-agenda" || entrada.target.id === "grid-parceiros") {
+          const filhos = entrada.target.children;
+          Array.from(filhos).forEach((filho, index) => {
+            filho.style.transition = `opacity 0.6s ease-out ${index * 0.15}s, transform 0.6s ease-out ${index * 0.15}s`;
+            filho.style.opacity = "1";
+            filho.style.transform = "translateY(0)";
           });
-        }, 500);
+        }
+        observador.unobserve(entrada.target);
       }
-      observador.observe(elemento);
     });
-  };
+  }, {
+    threshold: 0.1,
+    rootMargin: "0px 0px -30px 0px"
+  });
 
-  setTimeout(configurarObservador, 800);
-}); // <-- ESSA CHAVE ESTAVA FALTANDO!
+  elementosParaRevelar.forEach((elemento) => {
+    if (elemento.id === "grid-projetos" || elemento.id === "grid-agenda" || elemento.id === "grid-parceiros") {
+      Array.from(elemento.children).forEach(filho => {
+        filho.style.opacity = "0";
+        filho.style.transform = "translateY(15px)";
+      });
+    }
+    // CORRIGIDO: de elementona para elemento
+    observador.observe(elemento);
+  });
+}
+
+// Gatilho inicial para carregar elementos estáticos do HTML
+document.addEventListener("DOMContentLoaded", () => {
+  configurarObservador();
+});
 
 // --- FUNÇÕES DA PÁGINA DE DETALHES ---
 function renderizarDetalhes() {
@@ -305,5 +308,5 @@ function renderizarDetalhes() {
   }
 }
 
-// Inicializa a aplicação
+// Inicialização geral da aplicação
 iniciar();
