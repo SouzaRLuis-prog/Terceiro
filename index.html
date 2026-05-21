@@ -8,16 +8,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
-      tailwind.config = {
+ tailwind.config = {
         theme: {
           extend: {
             colors: {
-              "portal-bg": "#FFFFFF",     // Fundo Geral
-              "portal-blue": "#BCE9F3",   // Elementos institucionais
-              "portal-green": "#CEE7C3",  // Cards / Conquistas
-              "portal-yellow": "#FBE9B5", // Seções de Destaque
-              "portal-action": "#F1C5C1", // BOTÃO DE DOAÇÃO (Chama atenção)
-              "portal-text": "#27272a",   // Zinc-800 (Para leitura perfeita)
+              "portal-bg": "#FFFFFF",       // Mantemos o fundo branco para máxima leitura e limpeza
+              "portal-text": "#2e2e2e",     // COLOR 5: Cinza grafite escuro (Substitui o preto puro. Leitura extremamente elegante)
+              "portal-blue": "#4f4f4f",     // COLOR 4: Cinza asfalto (Para o Header e elementos institucionais de peso)
+              "portal-green": "#6f6f6f",    // COLOR 3: Cinza médio (Para cards secundários e bordas estruturais)
+              "portal-yellow": "#909090",   // COLOR 2: Cinza claro metálico (Para seções de transição)
+              "portal-action": "#b0b0b0",   // COLOR 1: O cinza mais claro (Para botões e interações sutilmente destacadas)
             },
             borderRadius: {
               portal: "1.5rem",
@@ -26,6 +26,21 @@
         },
       };
     </script>
+    
+    <style>
+  /* Estado Inicial: invisível e levemente deslocado para baixo */
+  .revelar {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  /* Estado Final: visível e na posição original */
+  .revelar.ativo {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
 
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -34,73 +49,75 @@
   </head>
 
   <body class="bg-portal-bg text-portal-text">
-    
-    <header class="sticky top-0 z-50 bg-portal-blue/80 backdrop-blur-md border-b border-portal-text/10 px-6 py-4">
+    <header class="sticky top-0 z-50 bg-portal-blue/90 backdrop-blur-md border-b border-white/10 px-6 py-4">
       <div class="max-w-6xl mx-auto flex justify-between items-center">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-portal-text rounded-full flex items-center justify-center text-white font-black">
+          <div class="w-10 h-10 bg-white text-portal-text rounded-full flex items-center justify-center font-black shadow-sm">
             NV
           </div>
-          <span class="text-2xl font-bold text-portal-text tracking-tight">Projeto Site</span>
+          <span class="text-2xl font-bold text-white tracking-tight">Projeto Site</span>
         </div>
 
-        <nav class="hidden md:flex items-center gap-6 text-sm font-bold text-portal-text/80">
-          <a href="#sobre" class="hover:text-portal-text transition">Sobre</a>
-          <a href="#agenda" class="hover:text-portal-text transition">Agenda</a>
-          <a href="#projetos" class="hover:text-portal-text transition">Projetos</a>
-          <a href="#parcerias" class="hover:text-portal-text transition">Parcerias</a>
+        <nav class="hidden md:flex items-center gap-6 text-sm font-bold text-white/80">
+          <a href="#sobre" class="hover:text-white transition">Sobre</a>
+          <a href="#agenda" class="hover:text-white transition">Agenda</a>
+          <a href="#projetos" class="hover:text-white transition">Projetos</a>
+          <a href="#parcerias" class="hover:text-white transition">Parcerias</a>
         </nav>
 
-        <a href="#doar" onclick="abrirModalDoacao()" class="bg-portal-action text-portal-text px-5 py-2.5 rounded-full font-bold text-sm tracking-wide hover:opacity-90 transition-all shadow-sm">
+        <a href="#doar" onclick="abrirModalDoacao()" class="bg-white text-portal-text px-5 py-2.5 rounded-full font-bold text-sm tracking-wide hover:bg-portal-action transition-all shadow-sm">
           Fazer Doação
         </a>
       </div>
     </header>
 
-    <section class="relative min-h-[75vh] flex items-center justify-center px-6 bg-portal-text overflow-hidden">
+<section class="relative min-h-screen flex items-center justify-center px-6 bg-portal-text overflow-hidden z-10">
       <img
         src="https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?q=80&w=1600"
-        class="absolute inset-0 w-full h-full object-cover opacity-40 select-none pointer-events-none"
+        class="absolute inset-0 w-full h-full object-cover opacity-25 select-none pointer-events-none"
         alt="Fundo Instituição"
       />
 
-      <div class="absolute inset-0 bg-gradient-to-t from-portal-text/80 via-portal-text/40 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-portal-text via-portal-text/50 to-portal-text/30"></div>
 
-      <div class="relative z-10 max-w-4xl mx-auto text-center space-y-6 px-4">
-        <span class="inline-block bg-portal-yellow text-portal-text text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-sm">
+      <div class="relative z-10 max-w-4xl mx-auto text-center space-y-8 px-4">
+        <span class="inline-block bg-white/10 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-sm backdrop-blur-sm border border-white/10">
           Portal Oficial
         </span>
 
-        <h2 class="text-4xl md:text-6xl font-bold text-white leading-tight drop-shadow-md">
+        <h2 class="text-5xl md:text-7xl font-extrabold text-white leading-tight tracking-tight drop-shadow-md">
           [ Mensagem sobre o projeto ]
         </h2>
 
-        <p class="text-portal-blue text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed drop-shadow-sm">
+        <p class="text-white/70 text-xl md:text-2xl font-normal max-w-2xl mx-auto leading-relaxed drop-shadow-sm">
           [ Objetivo e Missão ]
         </p>
 
-        <div class="pt-4">
-          <a href="#projetos" class="inline-block bg-portal-green text-portal-text px-8 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-white transition-all shadow-md hover:shadow-xl hover:-translate-y-0.5">
-            Conhecer Projetos
+        <div class="pt-6">
+          <a href="#sobre" class="inline-block bg-white text-portal-text px-8 py-4 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-portal-action hover:scale-105 transition-all shadow-lg hover:shadow-2xl">
+            Conhecer o Projeto <i class="fa-solid fa-arrow-down ml-2 animate-bounce"></i>
           </a>
         </div>
       </div>
     </section>
-
-    <section id="sobre" class="bg-portal-yellow border-y border-portal-text/5 py-20 px-6">
-      <div class="max-w-4xl mx-auto text-center space-y-6">
-        <h2 class="text-3xl font-bold text-portal-text uppercase tracking-wide">
+    
+    
+<section id="sobre" class="revelar min-h-screen flex items-center justify-center bg-portal-yellow/10 border-b border-portal-text/10 shadow-[inner_0_4px_20px_rgba(0,0,0,0.05)] px-6 relative z-10">
+      <div class="max-w-4xl mx-auto text-center space-y-8 py-20">
+        <span class="text-xs font-bold text-portal-text/40 uppercase tracking-widest bg-portal-text/5 px-4 py-1.5 rounded-full">
+          Conheça Nossa História
+        </span>
+        <h2 class="text-4xl md:text-5xl font-extrabold text-portal-text uppercase tracking-tight">
           Sobre o Projeto
         </h2>
-        <div class="h-1 w-20 bg-portal-text/20 mx-auto rounded-full"></div>
-        <p class="text-portal-text/80 text-lg leading-relaxed font-medium">
-          Espaço para falar sobre o Projeto
+        <div class="h-1 w-24 bg-portal-text/20 mx-auto rounded-full"></div>
+        <p class="text-portal-text/80 text-xl md:text-2xl leading-relaxed font-normal max-w-3xl mx-auto">
+          Espaço para falar sobre o Projeto. Aqui você pode descrever detalhadamente o propósito, a abrangência e o impacto social das ações da Coordenadoria em Montes Claros.
         </p>
       </div>
     </section>
 
-    <section id="agenda" class="py-20 px-6 max-w-6xl mx-auto ">
-      <div class="flex justify-between items-end mb-12">
+    <div class="h-16 bg-portal-bg relative z-20 shadow-
         <div>
           <h2 class="text-3xl font-bold text-portal-text uppercase">
             Agenda de Ações
@@ -111,11 +128,11 @@
         </div>
       </div>
 
-      <div id="grid-agenda" class="grid md:grid-cols-3 gap-6">
+      <div id="grid-agenda" class=" revelar grid md:grid-cols-3 gap-6">
           </div>
     </section>
 
-    <section id="projetos" class="bg-white/20 py-20 px-6 border-t border-portal-text/5">
+    <section id="projetos" class=" revelar bg-white/20 py-20 px-6 border-t border-portal-text/5">
       <div class="max-w-6xl mx-auto">
         <div class="mb-12">
           <h2 class="text-3xl font-bold text-portal-text uppercase">
@@ -130,12 +147,12 @@
       </div>
     </section>
 
- <section id="parcerias" class="py-20 px-6 max-w-6xl mx-auto text-center border-t border-portal-text/5">
+ <section id="parcerias" class=" revelar py-20 px-6 max-w-6xl mx-auto text-center border-t border-portal-text/5">
       <h3 class="text-xs font-bold text-portal-text/50 uppercase tracking-widest mb-8">
         Parceiros e Apoio
       </h3>
       
-      <div id="grid-parceiros" class="flex flex-wrap justify-center items-center gap-12 md:gap-16">
+      <div id="grid-parceiros" class=" revelar flex flex-wrap justify-center items-center gap-12 md:gap-16">
           </div>
     </section>
 
@@ -157,7 +174,7 @@
           </button>
         </div>
 
-        <div id="grid-acervo" class="p-6 overflow-y-auto grid gap-3 bg-portal-bg"></div>
+        <div id="grid-acervo" class=" revelar p-6 overflow-y-auto grid gap-3 bg-portal-bg"></div>
 
         <div class="p-6 bg-portal-yellow/30 border-t border-portal-text/10 flex justify-between items-center">
           <button id="btn-prev" onclick="mudarPagina(-1)" class="bg-portal-text text-white px-5 py-2 rounded-full font-bold text-xs uppercase tracking-wider hover:opacity-90 disabled:opacity-20 disabled:pointer-events-none transition-all">
@@ -213,7 +230,7 @@
     
     
 
-    <footer class="bg-portal-text text-white/80 py-12 px-6 text-center text-sm font-medium border-t border-portal-text/20">
+    <footer class="revelar  bg-portal-text text-white/80 py-12 px-6 text-center text-sm font-medium border-t border-portal-text/20">
       <p>© 2026 Portal Projeto Site. Todos os direitos reservados.</p>
       <p class="text-portal-blue/60 text-xs mt-2">
         Desenvolvido com foco em impacto social.
