@@ -1,31 +1,31 @@
-
-const URL_BASE = "https://script.google.com/macros/s/AKfycbzyerF4pvHSlIjCejiTQdWDiSIn8KEHb5dAk3kYyAue-tDTX-IbrR-H-pe4xfq-8N8K/exec";
+const URL_BASE = "https://script.google.com/macros/s/AKfycbwjNuC7l7mLRaHyt0aWS8ATfAVgfQDmAdzHYydhZBdQPFuwZ2GA1VN6D-NCntENyQ4F/exec";
 
 const URL_POSTAGENS = `${URL_BASE}?aba=Postagens`;
 const URL_AGENDA    = `${URL_BASE}?aba=Agenda`;
+const URL_PARCEIROS = `${URL_BASE}?aba=Parceiros`;
 
 let todosOsProjetos = [];
 let todosOsEventos = [];
+let todosOsParceiros = []; 
 let paginaAtual = 1;
 const itensPorPagina = 6;
 
 // --- INICIALIZAÇÃO ASSÍNCRONA ---
 async function iniciar() {
   try {
-    // CORREÇÃO: Busca as postagens e a agenda simultaneamente
-    const [resPostagens, resAgenda] = await Promise.all([
+    const [resPostagens, resAgenda, resParceiros] = await Promise.all([
         fetch(URL_POSTAGENS),
-        fetch(URL_AGENDA)
+        fetch(URL_AGENDA),
+        fetch(URL_PARCEIROS)
     ]);
 
     todosOsProjetos = await resPostagens.json();
     todosOsEventos = await resAgenda.json();
+    todosOsParceiros = await resParceiros.json(); 
 
-    // Remove o loader se ele existir
     const loader = document.getElementById("loader") || document.getElementById("loading-state");
     if (loader) loader.remove();
 
-    // Roteamento inteligente
     if (document.getElementById("grid-agenda")) {
       renderizarAgenda();
     }
@@ -34,17 +34,46 @@ async function iniciar() {
       renderizarHome();
     }
 
+    if (document.getElementById("grid-parceiros")) {
+      renderizarParceiros(); 
+    }
+
     if (document.getElementById("p-titulo")) {
       renderizarDetalhes();
     }
   } catch (error) {
-    console.error("Erro ao carregar dados:", error);
+    console.error("Erro ao carregar dados do portal:", error);
   }
 }
 
-// --- FUNÇÃO DA AGENDA DINÂMICA ---
+function renderizarParceiros() {
+  const gridParceiros = document.getElementById("grid-parceiros");
+  if (!gridParceiros) return;
+  
+  gridParceiros.innerHTML = ""; 
+
+  if (!todosOsParceiros || todosOsParceiros.length === 0 || todosOsParceiros.erro) {
+    gridParceiros.innerHTML = `<p class="text-portal-text/40 text-xs italic">Espaço reservado para parceiros institucionais.</p>`;
+    return;
+  }
+
+  todosOsParceiros.forEach((parceiro) => {
+    // Garante que o código não quebre mesmo se os dados vierem vazios ou desalinhados
+    const nomeParceiro = parceiro.nome || "Parceiro Institucional";
+    const imagemParceiro = parceiro.imagem || "";
+
+    gridParceiros.innerHTML += `
+      <div class="flex flex-col items-center justify-center p-4 grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all duration-300 max-w-[150px]">
+        <img src="${imagemParceiro}" alt="Logo ${nomeParceiro}" class="max-h-12 w-auto object-contain mb-2" onerror="this.src='https://placehold.co/150x50?text=${encodeURIComponent(nomeParceiro)}'">
+        <span class="text-[10px] font-bold text-portal-text/40 uppercase tracking-wider text-center block md:hidden">${nomeParceiro}</span>
+      </div>
+    `;
+  });
+}
 function renderizarAgenda() {
   const gridAgenda = document.getElementById("grid-agenda");
+  if (!gridAgenda) return;
+  
   gridAgenda.innerHTML = "";
 
   if (!todosOsEventos || todosOsEventos.length === 0 || todosOsEventos.erro) {
@@ -53,12 +82,9 @@ function renderizarAgenda() {
   }
 
   todosOsEventos.forEach((evento) => {
-    // 1. CAPTURA A HORA BRUTA DA PLANILHA
     let horaFormatada = evento.hora || '--:--';
 
-    // 2. A MÁGICA: Se a hora vier no formato de data longa (contendo o "T" do ISO), nós limpamos
     if (typeof horaFormatada === 'string' && horaFormatada.includes('T')) {
-      // Pega apenas o pedaço da hora (ex: "13:06")
       horaFormatada = horaFormatada.split('T')[1].substring(0, 5);
     }
 
@@ -80,16 +106,16 @@ function renderizarAgenda() {
   });
 }
 
-// --- FUNÇÕES DA HOME ---
 function renderizarHome() {
   const gridHome = document.getElementById("grid-projetos");
-  gridHome.innerHTML = ""; // Limpa antes de renderizar
+  if (!gridHome) return;
+  
+  gridHome.innerHTML = ""; 
 
   todosOsProjetos.slice(0, 5).forEach((projeto) => {
     gridHome.innerHTML += criarCardHTML(projeto);
   });
 
-  // Adiciona o card de "Ver Antigos"
   gridHome.innerHTML += `
       <div onclick="abrirModal()" class="bg-portal-blue/20 border-2 border-dashed border-portal-text/20 rounded-portal flex flex-col items-center justify-center p-10 text-center hover:bg-portal-green/40 hover:border-portal-text/40 transition-all cursor-pointer group">
             <div class="w-14 h-14 bg-portal-text text-white rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
@@ -110,22 +136,26 @@ function criarCardHTML(projeto) {
             <h3 class="text-2xl font-bold text-portal-text mt-1 leading-tight">${projeto.titulo}</h3>
             <p class="text-portal-text/70 text-sm mt-2 line-clamp-2">${projeto.descricao || 'Conheça mais detalhes sobre esse projeto clicando abaixo.'}</p>
            <a href="${link}" class="mt-auto block text-center bg-portal-text text-white py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-colors">
-            Ler Postagem
+            Conhecer Projeto
         </a>
         </div>
     `;
 }
 
-// --- FUNÇÕES DO MODAL (ACERVO) ---
 function abrirModal() {
   paginaAtual = 1;
-  document.getElementById("modal-acervo").classList.remove("hidden");
-  document.body.style.overflow = "hidden";
-  renderizarPaginaAcervo();
+  const modal = document.getElementById("modal-acervo");
+  if (modal) {
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    renderizarPaginaAcervo();
+  }
 }
 
 function renderizarPaginaAcervo() {
   const gridAcervo = document.getElementById("grid-acervo");
+  if (!gridAcervo) return;
+
   const inicio = (paginaAtual - 1) * itensPorPagina;
   const projetosExibidos = todosOsProjetos.slice(inicio, inicio + itensPorPagina);
 
@@ -146,10 +176,16 @@ function renderizarPaginaAcervo() {
         </div>
     `;
   });
-
-  document.getElementById("pagina-atual").innerText = `Página ${paginaAtual}`;
-  document.getElementById("btn-prev").disabled = paginaAtual === 1;
-  document.getElementById("btn-next").disabled = inicio + itensPorPagina >= todosOsProjetos.length;
+  
+  if (document.getElementById("pagina-atual")) {
+    document.getElementById("pagina-atual").innerText = `Página ${paginaAtual}`;
+  }
+  if (document.getElementById("btn-prev")) {
+    document.getElementById("btn-prev").disabled = paginaAtual === 1;
+  }
+  if (document.getElementById("btn-next")) {
+    document.getElementById("btn-next").disabled = inicio + itensPorPagina >= todosOsProjetos.length;
+  }
 }
 
 function mudarPagina(direcao) {
@@ -158,24 +194,73 @@ function mudarPagina(direcao) {
 }
 
 function fecharModal() {
-  document.getElementById("modal-acervo").classList.add("hidden");
-  document.body.style.overflow = "auto";
+  const modal = document.getElementById("modal-acervo");
+  if (modal) {
+    modal.classList.add("hidden");
+    document.body.style.overflow = "auto";
+  }
+}
+
+// --- FUNÇÕES DO MODAL DE DOAÇÃO (CORRIGIDAS) ---
+function abrirModalDoacao() {
+  const modal = document.getElementById("modal-doacao");
+  if (modal) {
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden"; 
+  }
+}
+
+function fecharModalDoacao() {
+  const modal = document.getElementById("modal-doacao");
+  if (modal) {
+    modal.classList.add("hidden");
+    document.body.style.overflow = "auto"; 
+  }
+}
+
+function copiarPix() {
+  const elementoChave = document.getElementById("texto-chave");
+  if (!elementoChave) return;
+
+  const sampleChave = elementoChave.innerText;
+  
+  navigator.clipboard.writeText(sampleChave).then(() => {
+    // Seletor corrigido para encontrar o span do botão de copiar independentemente de formatações externas
+    const alvo = document.querySelector("button[onclick='copiarPix()'] span:last-child");
+    if (!alvo) return;
+
+    const originalText = alvo.innerHTML;
+    
+    alvo.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
+    alvo.classList.remove("bg-portal-text", "text-white");
+    alvo.classList.add("bg-portal-green", "text-portal-text");
+
+    setTimeout(() => {
+      alvo.innerHTML = originalText;
+      alvo.classList.remove("bg-portal-green", "text-portal-text");
+      alvo.classList.add("bg-portal-text", "text-white");
+    }, 2000);
+  }).catch(err => {
+    console.error("Erro ao copiar o Pix: ", err);
+  });
 }
 
 // --- FUNÇÕES DA PÁGINA DE DETALHES ---
 function renderizarDetalhes() {
   const urlParams = new URLSearchParams(window.location.search);
   const nomeBuscado = urlParams.get("projeto");
+  if (!nomeBuscado) return;
+
   const projeto = todosOsProjetos.find((p) => p.titulo === decodeURIComponent(nomeBuscado));
 
   if (projeto) {
-    document.getElementById("p-titulo").innerText = projeto.titulo;
-    document.getElementById("p-categoria").innerText = projeto.categoria;
-    document.getElementById("p-imagem").src = projeto.imagem;
-    document.getElementById("p-descricao").innerText = projeto.descricao;
-    document.getElementById("projeto-content").classList.remove("hidden");
+    if (document.getElementById("p-titulo")) document.getElementById("p-titulo").innerText = projeto.titulo;
+    if (document.getElementById("p-categoria")) document.getElementById("p-categoria").innerText = projeto.categoria;
+    if (document.getElementById("p-imagem")) document.getElementById("p-imagem").src = projeto.imagem;
+    if (document.getElementById("p-descricao")) document.getElementById("p-descricao").innerText = projeto.descricao;
+    if (document.getElementById("projeto-content")) document.getElementById("projeto-content").classList.remove("hidden");
   }
 }
 
-// Executa a inicialização
+// Inicializa a aplicação
 iniciar();
