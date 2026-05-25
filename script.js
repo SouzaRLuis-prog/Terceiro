@@ -10,7 +10,7 @@ let todosOsParceiros = [];
 let paginaAtual = 1;
 const itensPorPagina = 6;
 
-// --- INICIALIZAÇÃO ASSÍNCRONA ---
+// --- INICIALIZAÇÃO *****ÍNCRONA ---
 async function iniciar() {
   try {
     const [resPostagens, resAgenda, resParceiros] = await Promise.all([
@@ -124,9 +124,6 @@ function renderizarHome() {
 
   gridHome.innerHTML += `
       <div onclick="abrirModal()" class="bg-portal-blue/20 border-2 border-dashed border-portal-text/20 rounded-portal flex flex-col items-center justify-center p-10 text-center hover:bg-portal-green/40 hover:border-portal-text/40 transition-all cursor-pointer group">
-            <div class="w-14 h-14 bg-portal-text text-white rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
-                <span class="text-2xl font-bold">+</span>
-            </div>
             <h3 class="text-xl font-bold text-portal-text uppercase tracking-tight">Ver outras postagens</h3>
             <p class="text-portal-text/60 mt-1 font-semibold uppercase text-xs tracking-wider">Postagens antigas</p>
         </div>
