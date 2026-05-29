@@ -300,7 +300,12 @@ function renderizarDetalhes() {
     if (document.getElementById("p-titulo")) document.getElementById("p-titulo").innerText = projeto.titulo;
     if (document.getElementById("p-categoria")) document.getElementById("p-categoria").innerText = projeto.categoria;
     if (document.getElementById("p-imagem")) document.getElementById("p-imagem").src = projeto.imagem;
-    if (document.getElementById("p-descricao")) document.getElementById("p-descricao").innerText = projeto.descricao;
+    
+    // ATENÇÃO AQUI: Mudamos de .innerText para .innerHTML para aceitar tags HTML da planilha
+    if (document.getElementById("p-descricao")) {
+      document.getElementById("p-descricao").innerHTML = projeto.descricao;
+    }
+    
     if (document.getElementById("projeto-content")) document.getElementById("projeto-content").classList.remove("hidden");
   }
 }
