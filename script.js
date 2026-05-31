@@ -1,19 +1,21 @@
-const URL_BASE =
-  "https://script.google.com/macros/s/AKfycbwjNuC7l7mLRaHyt0aWS8ATfAVgfQDmAdzHYydhZBdQPFuwZ2GA1VN6D-NCntENyQ4F/exec";
-
-const URL_POSTAGENS = `${URL_BASE}?aba=Postagens`;
-const URL_AGENDA = `${URL_BASE}?aba=Agenda`;
-const URL_PARCEIROS = `${URL_BASE}?aba=Parceiros`;
-
-let todosOsProjetos = [];
-let todosOsEventos = [];
-let todosOsParceiros = [];
-let paginaAtual = 1;
-const itensPorPagina = 6;
+let URL_BASE = "";
 
 // --- INICIALIZAÇÃO ASSÍNCRONA ---
 async function iniciar() {
   try {
+    // 1. Busca o arquivo de configuração gerado dinamicamente pelo GitHub Actions
+    const resConfig = await fetch('config.json');
+    const config = await resConfig.json();
+    
+    // 2. Alimenta a URL base com o valor que veio do arquivo protegido
+    URL_BASE = config.apiUrl;
+
+    // 3. Monta os endpoints dinamicamente
+    const URL_POSTAGENS = `${URL_BASE}?aba=Postagens`;
+    const URL_AGENDA = `${URL_BASE}?aba=Agenda`;
+    const URL_PARCEIROS = `${URL_BASE}?aba=Parceiros`;
+
+    // 4. Executa os fetches principais normalmente
     const [resPostagens, resAgenda, resParceiros] = await Promise.all([
       fetch(URL_POSTAGENS),
       fetch(URL_AGENDA),
@@ -45,12 +47,11 @@ async function iniciar() {
       renderizarDetalhes();
     }
 
-    // Ativa o observador imediatamente após carregar e renderizar os dados da planilha
     if (typeof configurarObservador === "function") {
       configurarObservador();
     }
   } catch (error) {
-    console.error("Erro ao carregar dados do portal:", error);
+    console.error("Erro ao carregar dados do portal ou arquivo de configuração:", error);
   }
 }
 
