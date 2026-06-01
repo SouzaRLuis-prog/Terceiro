@@ -1,4 +1,4 @@
-let URL_BASE = "";
+let URL_BASE = "https://script.google.com/macros/s/AKfycbyJ0g6vomBKNWVl4xvFC6gNF039ENwNdYucZjeIl3dvaLe0rEiyX6_V4Vz8Jcxu-ygF/exec";
 
 // --- INICIALIZAÇÃO ASSÍNCRONA ---
 async function iniciar() {
