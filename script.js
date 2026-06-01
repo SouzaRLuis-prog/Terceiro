@@ -1,4 +1,5 @@
-let URL_BASE = "https://script.google.com/macros/s/AKfycbyJ0g6vomBKNWVl4xvFC6gNF039ENwNdYucZjeIl3dvaLe0rEiyX6_V4Vz8Jcxu-ygF/exec";
+// Alterado: Começa vazia para não expor seus dados no histórico do GitHub
+let URL_BASE = "";
 
 // --- INICIALIZAÇÃO ASSÍNCRONA ---
 async function iniciar() {
@@ -10,7 +11,7 @@ async function iniciar() {
     // 2. Alimenta a URL base com o valor que veio do arquivo protegido
     URL_BASE = config.apiUrl;
 
-    // 3. Monta os endpoints dinamicamente
+    // 3. Monta os endpoints dinamicamente após obter a URL_BASE
     const URL_POSTAGENS = `${URL_BASE}?aba=Postagens`;
     const URL_AGENDA = `${URL_BASE}?aba=Agenda`;
     const URL_PARCEIROS = `${URL_BASE}?aba=Parceiros`;
@@ -104,7 +105,6 @@ function renderizarAgenda() {
     const diaVal = evento.dia || "00";
     const mesVal = evento.mes || "MES";
 
-    // Modificado: Fundo branco, borda sutil, shadow-md nativo e hover:shadow-xl com ganho de escala elegante
     gridAgenda.innerHTML += `
       <div class="bg-white border border-portal-text/5 p-6 rounded-xl flex gap-4 items-start transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-1">
         <div class="bg-portal-dark text-white text-center p-3 rounded-lg font-bold min-w-[60px] shadow-sm">
@@ -130,7 +130,6 @@ function renderizarHome() {
     gridHome.innerHTML += criarCardHTML(projeto);
   });
 
-  // Modificado: Card de chamada para postagens antigas estilizado para harmonizar com a paleta de cinzas e amarelo
   gridHome.innerHTML += `
       <div onclick="abrirModal()" class="bg-white border-2 border-dashed border-portal-text/20 rounded-portal flex flex-col items-center justify-center p-10 text-center hover:bg-portal-muted hover:border-portal-yellow/60 hover:shadow-xl transition-all cursor-pointer group shadow-md">
             <div class="w-12 h-12 rounded-full bg-portal-muted group-hover:bg-portal-yellow flex items-center justify-center text-portal-dark transition-colors duration-300 mb-3 text-lg">
@@ -144,7 +143,6 @@ function renderizarHome() {
 
 function criarCardHTML(projeto) {
   const link = `post.html?projeto=${encodeURIComponent(projeto.titulo)}`;
-  // Modificado: Removido os antigos fundos coloridos. Inserido bg-white purificado, shadow-md e transições com profundidade elevada shadow-2xl. Botão agora foca no portal-dark com hover em portal-yellow.
   return `
         <div class="bg-white border border-portal-text/5 rounded-portal p-6 flex flex-col transition-all duration-300 shadow-md hover:shadow-2xl hover:-translate-y-2">
             <div class="overflow-hidden rounded-lg mb-4 h-48 w-full shadow-inner bg-portal-muted">
@@ -182,7 +180,6 @@ function renderizarPaginaAcervo() {
 
   gridAcervo.innerHTML = "";
   projetosExibidos.forEach((projeto) => {
-    // Modificado: Alinhado os elementos de lista do acervo para usar fundo branco puro, bordas suaves e sombras discretas mas perceptíveis
     gridAcervo.innerHTML += `
         <div class="flex items-center justify-between p-4 bg-white border border-portal-text/5 rounded-xl hover:border-portal-yellow/30 shadow-sm hover:shadow-md transition-all duration-200">
             <div class="flex items-center gap-4">
@@ -224,6 +221,7 @@ function fecharModal() {
   }
 }
 
+// Funções de doação e Pix mantidas sem alterações
 function abrirModalDoacao() {
   const modal = document.getElementById("modal-doacao");
   if (modal) {
@@ -271,7 +269,7 @@ function copiarPix() {
     });
 }
 
-// --- EFEITO DE SURGIMENTO AVANÇADO (SCROLL REVEAL COM CASCATA CORRIGIDO) ---
+// --- EFEITO DE SURGIMENTO AVANÇADO ---
 function configurarObservador() {
   const elementosParaRevelar = document.querySelectorAll(".revelar");
 
@@ -322,7 +320,6 @@ function configurarObservador() {
   });
 }
 
-// Gatilho inicial para carregar elementos estáticos do HTML
 document.addEventListener("DOMContentLoaded", () => {
   configurarObservador();
 });
@@ -354,5 +351,4 @@ function renderizarDetalhes() {
   }
 }
 
-// Inicialização geral da aplicação
 iniciar();
