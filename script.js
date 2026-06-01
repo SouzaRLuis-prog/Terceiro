@@ -4,19 +4,19 @@ let URL_BASE = "";
 // --- INICIALIZAÇÃO ASSÍNCRONA ---
 async function iniciar() {
   try {
-    // 1. Busca o arquivo de configuração gerado dinamicamente pelo GitHub Actions
+    // 1. O script tenta ler o arquivo injetado pela automação
     const resConfig = await fetch('config.json');
     const config = await resConfig.json();
     
-    // 2. Alimenta a URL base com o valor que veio do arquivo protegido
+    // 2. Alimenta a variável global
     URL_BASE = config.apiUrl;
 
-    // 3. Monta os endpoints dinamicamente após obter a URL_BASE
+    // 3. Monta as URLs das abas dinamicamente
     const URL_POSTAGENS = `${URL_BASE}?aba=Postagens`;
     const URL_AGENDA = `${URL_BASE}?aba=Agenda`;
     const URL_PARCEIROS = `${URL_BASE}?aba=Parceiros`;
 
-    // 4. Executa os fetches principais normalmente
+    // 4. Dispara as requisições paralelas para o Google Apps Script
     const [resPostagens, resAgenda, resParceiros] = await Promise.all([
       fetch(URL_POSTAGENS),
       fetch(URL_AGENDA),
@@ -55,7 +55,6 @@ async function iniciar() {
     console.error("Erro ao carregar dados do portal ou arquivo de configuração:", error);
   }
 }
-
 function renderizarParceiros() {
   const gridParceiros = document.getElementById("grid-parceiros");
   if (!gridParceiros) return;
