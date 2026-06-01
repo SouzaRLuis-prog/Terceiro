@@ -27,7 +27,7 @@ jobs:
       # Comando que lê o seu secret API_URL e cria o config.json no servidor
       - name: Injetar API_URL no config.json
         run: |
-          echo "{\"apiUrl\": \"${{ secrets.API_URL }}\"}" > config.json
+         echo "{\"apiUrl\": \"${{ secrets.API_URL }}\"}" > config.json
 
       - name: Configurar Pages
         uses: actions/configure-pages@v4
