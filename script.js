@@ -1,22 +1,22 @@
-// Alterado: Começa vazia para não expor seus dados no histórico do GitHub
-let URL_BASE = "";
+// --- CONFIGURAÇÃO GLOBAL ---
+let URL_BASE = "https://script.google.com/macros/s/AKfycbyP_MmBKUYum25GGCMnnBUaNyGZ9Rqekbd6X35lLzJoHwhzZ6ATVP5dLP1NngOjveaHdg/exec";
+let todosOsProjetos = [];
+let todosOsEventos = [];
+let todosOsParceiros = [];
+
+// --- CONTROLO DE PAGINAÇÃO (CARREGAR MAIS) ---
+let quantidadeExibida = 3;      // Quantos cards aparecem inicialmente
+const incrementoPagina = 3;     // Quantos cards novos entram a cada clique
+let paginaAtualAcervo = 1;      // (Antigo modal se ainda usares)
+const itensPorPagina = 3;
 
 // --- INICIALIZAÇÃO ASSÍNCRONA ---
 async function iniciar() {
   try {
-    // 1. Busca o arquivo de configuração gerado dinamicamente pelo GitHub Actions
-    const resConfig = await fetch('config.json');
-    const config = await resConfig.json();
-    
-    // 2. Alimenta a URL base com o valor que veio do arquivo protegido
-    URL_BASE = config.apiUrl;
-
-    // 3. Monta os endpoints dinamicamente
     const URL_POSTAGENS = `${URL_BASE}?aba=Postagens`;
     const URL_AGENDA = `${URL_BASE}?aba=Agenda`;
     const URL_PARCEIROS = `${URL_BASE}?aba=Parceiros`;
 
-    // 4. Executa os fetches principais normalmente
     const [resPostagens, resAgenda, resParceiros] = await Promise.all([
       fetch(URL_POSTAGENS),
       fetch(URL_AGENDA),
@@ -27,9 +27,7 @@ async function iniciar() {
     todosOsEventos = await resAgenda.json();
     todosOsParceiros = await resParceiros.json();
 
-    const loader =
-      document.getElementById("loader") ||
-      document.getElementById("loading-state");
+    const loader = document.getElementById("loader") || document.getElementById("loading-state");
     if (loader) loader.remove();
 
     if (document.getElementById("grid-agenda")) {
@@ -55,17 +53,14 @@ async function iniciar() {
     console.error("Erro ao carregar dados do portal ou arquivo de configuração:", error);
   }
 }
+
 function renderizarParceiros() {
   const gridParceiros = document.getElementById("grid-parceiros");
   if (!gridParceiros) return;
 
   gridParceiros.innerHTML = "";
 
-  if (
-    !todosOsParceiros ||
-    todosOsParceiros.length === 0 ||
-    todosOsParceiros.erro
-  ) {
+  if (!todosOsParceiros || todosOsParceiros.length === 0 || todosOsParceiros.erro) {
     gridParceiros.innerHTML = `<p class="text-portal-text/40 text-xs italic">Espaço reservado para parceiros institucionais.</p>`;
     return;
   }
@@ -119,46 +114,109 @@ function renderizarAgenda() {
   });
 }
 
-function renderizarHome() {
-  const gridHome = document.getElementById("grid-projetos");
-  if (!gridHome) return;
+function renderizarHome(projetosParaExibir = todosOsProjetos) {
+  const gridProjetos = document.getElementById("grid-projetos");
+  const btnCarregarMais = document.getElementById("btn-carregar-mais");
+  if (!gridProjetos) return;
 
-  gridHome.innerHTML = "";
+  gridProjetos.innerHTML = "";
 
-  todosOsProjetos.slice(0, 5).forEach((projeto) => {
-    gridHome.innerHTML += criarCardHTML(projeto);
+  if (projetosParaExibir.length === 0) {
+    gridProjetos.innerHTML = `
+      <p class="text-portal-text/50 text-sm italic col-span-3 text-center py-8">
+        Nenhuma postagem encontrada nesta categoria.
+      </p>
+    `;
+    if (btnCarregarMais) btnCarregarMais.classList.add("hidden");
+    return;
+  }
+
+  // Limita os projetos com base no botão "Carregar Mais"
+  const projetosFatiados = projetosParaExibir.slice(0, quantidadeExibida);
+
+  projetosFatiados.forEach(projeto => {
+    const cat = projeto.categoria || "Geral"; 
+    
+    gridProjetos.innerHTML += `
+      <div class="bg-white border border-portal-text/5 rounded-portal p-6 flex flex-col transition-all duration-300 shadow-md hover:shadow-2xl hover:-translate-y-2">
+          <div class="overflow-hidden rounded-lg mb-4 h-48 w-full shadow-inner bg-portal-muted">
+             <img src="${projeto.imagem || 'https://placehold.co/600x400?text=Sem+Imagem'}" class="h-full w-full object-cover hover:scale-105 transition-transform duration-500">
+          </div>
+          <span class="text-portal-yellow text-[10px] font-bold uppercase tracking-widest w-fit mb-2 bg-portal-yellow/10 px-2.5 py-0.5 rounded-md">${cat}</span>
+          <h3 class="text-2xl font-bold text-portal-dark mt-1 leading-tight line-clamp-2">${projeto.titulo || 'Sem Título'}</h3>
+          <p class="text-portal-text/70 text-sm mt-2 mb-5 line-clamp-2">${projeto.descricao || "Conheça mais detalhes sobre esse projeto clicando abaixo."}</p>
+          <a href="post.html?projeto=${encodeURIComponent(projeto.titulo || '')}" class="mt-auto block text-center bg-portal-dark text-white py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-portal-yellow hover:text-portal-dark shadow-sm hover:shadow-md transition-all duration-200">
+              Conhecer Projeto
+          </a>
+      </div>
+    `;
   });
 
-  gridHome.innerHTML += `
-      <div onclick="abrirModal()" class="bg-white border-2 border-dashed border-portal-text/20 rounded-portal flex flex-col items-center justify-center p-10 text-center hover:bg-portal-muted hover:border-portal-yellow/60 hover:shadow-xl transition-all cursor-pointer group shadow-md">
-            <div class="w-12 h-12 rounded-full bg-portal-muted group-hover:bg-portal-yellow flex items-center justify-center text-portal-dark transition-colors duration-300 mb-3 text-lg">
-              <i class="fa-solid fa-plus"></i>
-            </div>
-            <h3 class="text-xl font-bold text-portal-dark uppercase tracking-tight group-hover:text-portal-yellow transition-colors">Ver outras postagens</h3>
-            <p class="text-portal-text/50 mt-1 font-semibold uppercase text-xs tracking-wider">Postagens antigas</p>
-        </div>
-    `;
+  // Controla se exibe ou oculta o botão
+  if (btnCarregarMais) {
+    if (quantidadeExibida >= projetosParaExibir.length) {
+      btnCarregarMais.classList.add("hidden");
+    } else {
+      btnCarregarMais.classList.remove("hidden");
+    }
+  }
+
+  // Recarrega o efeito visual se a função existir
+  if (typeof reaplicarEfeitosFilhos === "function") {
+     reaplicarEfeitosFilhos(gridProjetos);
+  }
 }
 
-function criarCardHTML(projeto) {
-  const link = `post.html?projeto=${encodeURIComponent(projeto.titulo)}`;
-  return `
-        <div class="bg-white border border-portal-text/5 rounded-portal p-6 flex flex-col transition-all duration-300 shadow-md hover:shadow-2xl hover:-translate-y-2">
-            <div class="overflow-hidden rounded-lg mb-4 h-48 w-full shadow-inner bg-portal-muted">
-               <img src="${projeto.imagem}" class="h-full w-full object-cover hover:scale-105 transition-transform duration-500">
-            </div>
-            <span class="text-portal-yellow text-[10px] font-bold uppercase tracking-widest w-fit mb-2 bg-portal-yellow/10 px-2.5 py-0.5 rounded-md">${projeto.categoria}</span>
-            <h3 class="text-2xl font-bold text-portal-dark mt-1 leading-tight line-clamp-2">${projeto.titulo}</h3>
-            <p class="text-portal-text/70 text-sm mt-2 mb-5 line-clamp-2">${projeto.descricao || "Conheça mais detalhes sobre esse projeto clicando abaixo."}</p>
-            <a href="${link}" class="mt-auto block text-center bg-portal-dark text-white py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-portal-yellow hover:text-portal-dark shadow-sm hover:shadow-md transition-all duration-200">
-                Conhecer Projeto
-            </a>
-        </div>
-    `;
+function carregarMaisProjetos() {
+  quantidadeExibida += incrementoPagina;
+  
+  // Deteta qual o filtro de categoria que está ativo no momento
+  const botaoAtivo = document.querySelector("section#projetos button.bg-portal-dark");
+  const filtroAtual = botaoAtivo ? botaoAtivo.textContent.trim().toLowerCase() : 'todos';
+  
+  if (filtroAtual === 'todos') {
+    renderizarHome(todosOsProjetos);
+  } else {
+    const projetosFiltrados = todosOsProjetos.filter(projeto => {
+      return projeto.categoria && projeto.categoria.trim().toLowerCase() === filtroAtual;
+    });
+    renderizarHome(projetosFiltrados);
+  }
 }
 
+function filtrarProjetos(categoriaSelecionada) {
+  // Reseta a contagem para voltar a exibir apenas as primeiras 6 da categoria escolhida
+  quantidadeExibida = incrementoPagina; 
+
+  let projetosFiltrados = [];
+  if (categoriaSelecionada === 'todos') {
+    projetosFiltrados = todosOsProjetos;
+  } else {
+    projetosFiltrados = todosOsProjetos.filter(projeto => {
+      return projeto.categoria && projeto.categoria.trim().toLowerCase() === categoriaSelecionada.trim().toLowerCase();
+    });
+  }
+
+  renderizarHome(projetosFiltrados);
+  atualizarEstiloBotoesFiltro(categoriaSelecionada);
+}
+
+function atualizarEstiloBotoesFiltro(categoriaAtiva) {
+  const botoes = document.querySelectorAll("section#projetos button");
+  botoes.forEach(botao => {
+    botao.classList.remove("bg-portal-dark", "text-white");
+    botao.classList.add("bg-white", "text-portal-dark", "border", "border-portal-text/5");
+    
+    if (botao.getAttribute("onclick").includes(`'${categoriaAtiva}'`)) {
+      botao.classList.remove("bg-white", "text-portal-dark", "border", "border-portal-text/5");
+      botao.classList.add("bg-portal-dark", "text-white");
+    }
+  });
+}
+
+// --- FUNÇÕES ANTIGAS DO MODAL (MANTIDAS CASO AINDA PRECISE) ---
 function abrirModal() {
-  paginaAtual = 1;
+  paginaAtualAcervo = 1;
   const modal = document.getElementById("modal-acervo");
   if (modal) {
     modal.classList.remove("hidden");
@@ -171,11 +229,8 @@ function renderizarPaginaAcervo() {
   const gridAcervo = document.getElementById("grid-acervo");
   if (!gridAcervo) return;
 
-  const inicio = (paginaAtual - 1) * itensPorPagina;
-  const projetosExibidos = todosOsProjetos.slice(
-    inicio,
-    inicio + itensPorPagina,
-  );
+  const inicio = (paginaAtualAcervo - 1) * itensPorPagina;
+  const projetosExibidos = todosOsProjetos.slice(inicio, inicio + itensPorPagina);
 
   gridAcervo.innerHTML = "";
   projetosExibidos.forEach((projeto) => {
@@ -196,19 +251,18 @@ function renderizarPaginaAcervo() {
   });
 
   if (document.getElementById("pagina-atual")) {
-    document.getElementById("pagina-atual").innerText = `Página ${paginaAtual}`;
+    document.getElementById("pagina-atual").innerText = `Página ${paginaAtualAcervo}`;
   }
   if (document.getElementById("btn-prev")) {
-    document.getElementById("btn-prev").disabled = paginaAtual === 1;
+    document.getElementById("btn-prev").disabled = paginaAtualAcervo === 1;
   }
   if (document.getElementById("btn-next")) {
-    document.getElementById("btn-next").disabled =
-      inicio + itensPorPagina >= todosOsProjetos.length;
+    document.getElementById("btn-next").disabled = inicio + itensPorPagina >= todosOsProjetos.length;
   }
 }
 
 function mudarPagina(direcao) {
-  paginaAtual += direcao;
+  paginaAtualAcervo += direcao;
   renderizarPaginaAcervo();
 }
 
@@ -220,7 +274,6 @@ function fecharModal() {
   }
 }
 
-// Funções de doação e Pix mantidas sem alterações
 function abrirModalDoacao() {
   const modal = document.getElementById("modal-doacao");
   if (modal) {
@@ -243,32 +296,26 @@ function copiarPix() {
 
   const sampleChave = elementoChave.innerText;
 
-  navigator.clipboard
-    .writeText(sampleChave)
-    .then(() => {
-      const alvo = document.querySelector(
-        "button[onclick='copiarPix()'] span:last-child",
-      );
-      if (!alvo) return;
+  navigator.clipboard.writeText(sampleChave).then(() => {
+    const alvo = document.querySelector("button[onclick='copiarPix()'] span:last-child");
+    if (!alvo) return;
 
-      const originalText = alvo.innerHTML;
+    const originalText = alvo.innerHTML;
+    alvo.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
+    alvo.classList.remove("bg-portal-dark", "text-white");
+    alvo.classList.add("bg-portal-yellow", "text-portal-dark");
 
-      alvo.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
-      alvo.classList.remove("bg-portal-dark", "text-white");
-      alvo.classList.add("bg-portal-yellow", "text-portal-dark");
-
-      setTimeout(() => {
-        alvo.innerHTML = originalText;
-        alvo.classList.remove("bg-portal-yellow", "text-portal-dark");
-        alvo.classList.add("bg-portal-dark", "text-white");
-      }, 2000);
-    })
-    .catch((err) => {
-      console.error("Erro ao copiar o Pix: ", err);
-    });
+    setTimeout(() => {
+      alvo.innerHTML = originalText;
+      alvo.classList.remove("bg-portal-yellow", "text-portal-dark");
+      alvo.classList.add("bg-portal-dark", "text-white");
+    }, 2000);
+  }).catch((err) => {
+    console.error("Erro ao copiar o Pix: ", err);
+  });
 }
 
-// --- EFEITO DE SURGIMENTO AVANÇADO ---
+// --- INTERSECTION OBSERVER ---
 function configurarObservador() {
   const elementosParaRevelar = document.querySelectorAll(".revelar");
 
@@ -296,10 +343,7 @@ function configurarObservador() {
         }
       });
     },
-    {
-      threshold: 0.1,
-      rootMargin: "0px 0px -30px 0px",
-    },
+    { threshold: 0.1, rootMargin: "0px 0px -30px 0px" }
   );
 
   elementosParaRevelar.forEach((elemento) => {
@@ -323,14 +367,13 @@ document.addEventListener("DOMContentLoaded", () => {
   configurarObservador();
 });
 
-// --- FUNÇÕES DA PÁGINA DE DETALHES ---
 function renderizarDetalhes() {
   const urlParams = new URLSearchParams(window.location.search);
   const nomeBuscado = urlParams.get("projeto");
   if (!nomeBuscado) return;
 
   const projeto = todosOsProjetos.find(
-    (p) => p.titulo === decodeURIComponent(nomeBuscado),
+    (p) => p.titulo === decodeURIComponent(nomeBuscado)
   );
 
   if (projeto) {
@@ -347,7 +390,48 @@ function renderizarDetalhes() {
 
     if (document.getElementById("projeto-content"))
       document.getElementById("projeto-content").classList.remove("hidden");
+
+    // 🌟 NOVA LÓGICA: Configuração do Botão de Compartilhar
+    const btnShare = document.getElementById("btn-share");
+    if (btnShare) {
+      // Remove qualquer evento antigo para evitar duplicações
+      btnShare.onclick = null; 
+      
+      btnShare.onclick = function() {
+        const dadosCompartilhamento = {
+          title: projeto.titulo || "Portal Terceiro Setor",
+          text: projeto.descricao ? projeto.descricao.substring(0, 100) + "..." : "Confira este projeto incrível!",
+          url: window.location.href // Pega o link exato da página atual com o parâmetro ?projeto=...
+        };
+
+        // Verifica se o navegador suporta a API de compartilhamento nativa (comum em celulares)
+        if (navigator.share) {
+          navigator.share(dadosCompartilhamento)
+            .then(() => console.log('Compartilhado com sucesso!'))
+            .catch((error) => console.log('Erro ao compartilhar:', error));
+        } else {
+          // Alternativa para navegadores que não suportam (Copia o link para a área de transferência)
+          navigator.clipboard.writeText(window.location.href)
+            .then(() => {
+              const textoOriginal = btnShare.innerHTML;
+              btnShare.innerHTML = `<i class="fa-solid fa-check"></i> Link Copiado!`;
+              btnShare.classList.remove("bg-portal-yellow", "text-portal-dark");
+              btnShare.classList.add("bg-green-500", "text-white");
+
+              setTimeout(() => {
+                btnShare.innerHTML = textoOriginal;
+                btnShare.classList.remove("bg-green-500", "text-white");
+                btnShare.classList.add("bg-portal-yellow", "text-portal-dark");
+              }, 2500);
+            })
+            .catch((err) => {
+              console.error("Não foi possível copiar o link: ", err);
+            });
+        }
+      };
+    }
   }
 }
 
+// Inicia a aplicação
 iniciar();
