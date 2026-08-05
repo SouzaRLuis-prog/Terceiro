@@ -4,13 +4,13 @@ let todosOsProjetos = [];
 let todosOsEventos = [];
 let todosOsParceiros = [];
 
-// --- CONTROLO DE PAGINAÇÃO (CARREGAR MAIS) ---
+// --- CONTROLE DE PAGINAÇÃO (CARREGAR MAIS) ---
 let quantidadeExibida = 3;      // Quantos cards aparecem inicialmente
 const incrementoPagina = 3;     // Quantos cards novos entram a cada clique
 let paginaAtualAcervo = 1;      // (Antigo modal se ainda usares)
 const itensPorPagina = 3;
 
-// --- INICIALIZAÇÃO ASSÍNCRONA ---
+
 async function iniciar() {
   try {
     const URL_POSTAGENS = `${URL_BASE}?aba=Postagens`;
